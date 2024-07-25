@@ -3,35 +3,7 @@ import telebot
 from telebot import types
 TOKEN=('7420849186:AAGMqf7IxRFeRGmwc5rHvTA-BqLs4LQs5Xk')
 bot =telebot.TeleBot(TOKEN)
-
-@bot.message_handler(commands=['start'])
-
-def start(message):
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    item1= types.InlineKeyboardButton('Каталог🌟',callback_data='1')
-    item2 = types.InlineKeyboardButton('Корзина🛒',callback_data='2')
-    item3 = types.InlineKeyboardButton('Техподдержка🛠️', callback_data='3')
-    markup.add(item1,item2,item3)
-    bot.send_message(message.chat.id,f'Привет!Это бета тест',reply_markup=markup)
-@bot.callback_query_handler(func=lambda call:call.data in ['1','2','3'])
-def vibor_menu(call):
-    if call.data == '1':
-        menu(call.message)
-    if call.data =='2':
-        pass
-    if call.data== '3':
-        bot.send_message(call.message.chat.id, 'ТГ техподдержки https://t.me/saltykodashok')
-
-
-@bot.message_handler(commands=['2345165723'])
-def menu(message):
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        item4 = types.InlineKeyboardButton('Файберы и губки.', callback_data='4')
-        item5 = types.InlineKeyboardButton('---', callback_data='5')
-        item6 = types.InlineKeyboardButton('---', callback_data='6')
-        markup.add(item4, item5, item6)
-        bot.send_message(message.chat.id, 'Выберите раздел.', reply_markup=markup)
-items=[       '360₽-ФАЙБЕР ДЛЯ МЫТЬЯ ПОСУДЫ S1,20×16см',
+items_Fiber=[       '360₽-ФАЙБЕР ДЛЯ МЫТЬЯ ПОСУДЫ S1,20×16см',
     '420₽-ГУБКА ДЛЯ МЫТЬЯ ПОСУДЫ S15,15,5×9см',
     '710₽-ФАЙБЕР УНИВЕРСАЛ A1,40×30см',
     '710₽-ДИСК ИНВОЛВЕР S2,Ø 12см',
@@ -56,7 +28,7 @@ items=[       '360₽-ФАЙБЕР ДЛЯ МЫТЬЯ ПОСУДЫ S1,20×16см'
         '780₽-СПОНЖ ТВИСТ S14,30×16см',
         '650₽-ФАЙБЕР УНИВЕРСАЛЬНЫЙ A4,40×40см',
 
-        '590₽-ФАЙБЕР ДЛЯ С',
+        '590₽-ФАЙБЕР ДЛЯ СТЕКЛА P1, 40 × 30 см',
         '210₽-ФАЙБЕР ДЛЯ ОПТИКИ P3,15×15см',
         '300₽-ФАЙБЕР ДЛЯ ЭКРАНОВ P4,20×15см',
 
@@ -65,8 +37,37 @@ items=[       '360₽-ФАЙБЕР ДЛЯ МЫТЬЯ ПОСУДЫ S1,20×16см'
         '2150₽-НАБОР ДЛЯ ОБЩЕЙ УБОРКИ General cleaning',
         '2170₽-НАБОР ДЛЯ УБОРКИ ВАННОЙ Bathroom cleaning']
 ITEMS_PER_RANGE=4
+@bot.message_handler(commands=['start'])
 
-def generate_markup(page=0):
+def start(message):
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    item1= types.InlineKeyboardButton('Каталог🌟',callback_data='1')
+    item2 = types.InlineKeyboardButton('Корзина🛒',callback_data='2')
+    item3 = types.InlineKeyboardButton('Техподдержка🛠️', callback_data='3')
+    markup.add(item1,item2,item3)
+    bot.send_message(message.chat.id,f'Привет!Это бета тест',reply_markup=markup)
+@bot.callback_query_handler(func=lambda call:call.data in ['1','2','3'])
+def vibor_menu(call):
+    if call.data == '1':
+        menu(call.message)
+    if call.data =='2':
+        pass
+    if call.data== '3':
+        bot.send_message(call.message.chat.id, 'ТГ техподдержки https://t.me/saltykodashok')
+
+
+@bot.message_handler(commands=['2345165723'])
+def menu(message):
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        item4 = types.InlineKeyboardButton('Файберы и губки.', callback_data='fpage_0')
+        item5 = types.InlineKeyboardButton('---', callback_data='apage_0')
+        item6 = types.InlineKeyboardButton('---', callback_data='bpage_0')
+        markup.add(item4, item5, item6)
+        bot.send_message(message.chat.id, 'Выберите раздел.', reply_markup=markup)
+
+
+def generate_markup(items,page=0):
+    global letter
     markup=types.InlineKeyboardMarkup()
     start_index= page * ITEMS_PER_RANGE
     end_index = start_index + ITEMS_PER_RANGE
@@ -77,24 +78,27 @@ def generate_markup(page=0):
         markup.add(button)
 
     if page > 0:
-        markup.add(types.InlineKeyboardButton(text="<<",callback_data=f'page_{page - 1}'))
+        markup.add(types.InlineKeyboardButton(text="<<",callback_data=f'{letter}page_{page - 1}'))
 
     if end_index < len(items):
-        markup.add(types.InlineKeyboardButton(text=">>",callback_data=f'page_{page + 1}'))
+        markup.add(types.InlineKeyboardButton(text=">>",callback_data=f'{letter}page_{page + 1}'))
     return markup
-@bot.callback_query_handler(func=lambda call:call.data in ['4','5','6'])
+@bot.callback_query_handler(func=lambda call:'page_' in call.data)
 def menu2(call):
-    if call.data == '4':
-        Fiber(call)
-def Fiber(call):
-    if call.data.startswith('page_'):
+    global letter
+    if call.data.startswith('fpage_'):
+        letter='f'
+        print(3)
+        Fiber(call,items_Fiber)
+def Fiber(call,items):
+    print(4)
+    if 'page_' in call.data :
         text,page=call.data.split('_')
 
-        markup = generate_markup(int(page))
+        markup = generate_markup(items,int(page))
         bot.edit_message_text(chat_id=call.message.chat.id,message_id=call.message.message_id,text='Выбор элемента' ,
                               reply_markup=markup)
 
-        # bot.send_message(call.message.chat.id, 'Выберите товар. GREEN FIBER HOME', reply_markup=markup)
     elif call.data.startswith('item_'):
         text,item_index=call.data.split('_')
         bot.send_message(call.message.chat.id,text=item_index)
